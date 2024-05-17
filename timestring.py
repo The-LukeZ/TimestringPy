@@ -18,12 +18,9 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright (C) 2024 The-LukeZ'
 __version__ = '1.0'
 __credits__ = ["mike182uk"]
-__all__ = ["TimestringPy", "DEFAULT_OPTS", "UNIT_MAP"]
+__all__ = ["parse_timestring", "DEFAULT_OPTS", "UNIT_MAP"]
 
-from re import (
-    sub as re_sub,
-    match as re_match
-)
+import re
 from datetime import timedelta
 
 DEFAULT_OPTS = {
@@ -35,165 +32,116 @@ DEFAULT_OPTS = {
 }
 
 UNIT_MAP = {
-    "ms": ["ms", "milli", "millisecond", "milliseconds"],
-    "s": ["s", "sec", "secs", "second", "seconds"],
-    "m": ["m", "min", "mins", "minute", "minutes"],
-    "h": ["h", "hr", "hrs", "hour", "hours"],
-    "d": ["d", "day", "days"],
-    "w": ["w", "week", "weeks"],
-    "mth": ["mon", "mth", "mths", "month", "months"],
-    "y": ["y", "yr", "yrs", "year", "years"]
+    "ms":   ["ms", "milli", "millisecond", "milliseconds"],
+    "s":    ["s", "sec", "secs", "second", "seconds"],
+    "m":    ["m", "min", "mins", "minute", "minutes"],
+    "h":    ["h", "hr", "hrs", "hour", "hours"],
+    "d":    ["d", "day", "days"],
+    "w":    ["w", "week", "weeks"],
+    "mth":  ["mon", "mth", "mths", "month", "months"],
+    "y":    ["y", "yr", "yrs", "year", "years"]
 }
 
-class TimestringPy:
-    """Parse a human readable time string into a timedelta object.
+def parse_timestring(value: str | int, opts: dict[str, float] = DEFAULT_OPTS) -> timedelta:
+    """
+    Parses a timestring into a timedelta object.
 
-    This class provides a static method `parse_timestring` to convert a human-readable
-    time string into a :class:`timedelta` object.
+    ### Args:
+        value (str | int): The timestring to parse (e.g., "1h2m3s", "5 days", etc.) OR the seconds but then it needs to be of type `int`.
+        opts (dict, optional): Optional dictionary with custom options. Defaults to DEFAULT_OPTS.
+
+            `hoursPerDay` (int, optional): The number of hours in a day (defaults to 24).
+            `daysPerWeek` (int, optional): The number of days in a week (defaults to 7).
+            `weeksPerMonth` (int, optional): The number of weeks in a month (defaults to 4).
+            `monthsPerYear` (int, optional): The number of months in a year (defaults to 12).
+            `daysPerYear` (float, optional): The average number of days in a year (defaults to 365.25).
+
+            If you pass this attribute, ALL keys listed above MUST be given!
+
+    ### Returns:
+        timedelta: The parsed time as a timedelta object.
+
+    ### Raises:
+        ValueError: If the value cannot be parsed or the return unit is invalid.
     """
 
-    @staticmethod
-    def parse_timestring(value: str, return_unit=None, opts=None) -> timedelta:
-        """
-        Parses a timestring into a timedelta object.
+    if value.isnumeric() or isinstance(value, int):
+        value = value + "s"
 
-        Args:
-            value (str): The timestring to parse (e.g., "1h2m3s", "5 days").
-            return_unit (str, optional): The unit to return the result in. Defaults to None (seconds).
-                If provided, the parsed time will be converted to the specified unit before creating
-                the timedelta object.
-            opts (dict, optional): Optional dictionary with custom options. Defaults to None (uses DEFAULT_OPTS).
-                - hoursPerDay (int, optional): The number of hours in a day (defaults to 24).
-                - daysPerWeek (int, optional): The number of days in a week (defaults to 7).
-                - weeksPerMonth (int, optional): The number of weeks in a month (defaults to 4).
-                - monthsPerYear (int, optional): The number of months in a year (defaults to 12).
-                - daysPerYear (float, optional): The average number of days in a year (defaults to 365.25).
+    UNIT_VALUES = _get_unit_values(opts)
+    MATCHES = re.finditer(r'[-+]?[0-9.]+[a-z]+', re.sub(r'[^.\w+-]+', "", value.lower()))
 
-        Returns:
-            datetime.timedelta: The parsed time as a timedelta object.
+    if not MATCHES:
+        raise ValueError(f"Failed to parse value: `{value}`")
 
-        Raises:
-            ValueError: If the value cannot be parsed or the return unit is invalid.
-        """
+    total_seconds = 0
+    for match in MATCHES:
+        val, unit = re.search(r'[0-9.]+', match.group(0)), re.search(r'[a-z]+', match.group(0))
+        total_seconds += _get_seconds(int(val.group(0)), unit.group(0), UNIT_VALUES)
 
-        opts = dict(**DEFAULT_OPTS, **opts or {})
+    return timedelta(seconds=total_seconds)
 
-        # Check if value is a number or number string
-        if isinstance(value, (int, float)) or re_match(r"^[-+]?[0-9.]+$"):
-            value = str(int(value)) + "ms"
+def _get_unit_values(opts) -> dict[str, float]:
+    """
+    Calculates conversion factors based on options.
 
-        total_seconds = 0
-        unit_values = TimestringPy._get_unit_values(opts)
-        groups = re_sub(r"[^\w\-+\.]", "", value.lower()).split(r"[-+]?\d+\.?")
+    Args:
+        opts (dict): Dictionary with options (same as parse_timestring).
 
-        if not groups:
-            raise ValueError(f"The value '{value}' could not be parsed as a timestring.")
+    Returns:
+        dict: Dictionary with conversion factors for each unit.
+    """
 
-        for group in groups:
-            if not group:
-                continue
-            value, unit = group.split(maxsplit=1)
-            total_seconds += TimestringPy._get_seconds(float(value), unit, unit_values)
+    unit_values = {
+        "ms": 0.001,
+        "s": 1,
+        "m": 60,
+        "h": 3600
+    }
 
-        if return_unit:
-            return TimestringPy._convert(total_seconds, return_unit, unit_values)
+    unit_values["d"] = opts["hoursPerDay"] * unit_values["h"]
+    unit_values["w"] = opts["daysPerWeek"] * unit_values["d"]
+    unit_values["mth"] = (opts["daysPerYear"] / opts["monthsPerYear"]) * unit_values["d"]
+    unit_values["y"] = opts["daysPerYear"] * unit_values["d"]
 
-        return timedelta(seconds=total_seconds)
+    return unit_values
 
-    @staticmethod
-    def _get_unit_values(opts) -> dict[str, float]:
-        """
-        Calculates conversion factors based on options.
+def _get_seconds(value, unit, unit_values) -> float:
+    """
+    Converts a value to seconds based on the given unit.
 
-        Args:
-            opts (dict): Dictionary with options (same as parse_timestring).
+    Args:
+        value (float): The value to convert.
+        unit (str): The unit of the value.
+        unit_values (dict): Dictionary with conversion factors.
 
-        Returns:
-            dict: Dictionary with conversion factors for each unit.
-        """
+    Returns:
+        float: The value in seconds.
+    """
+    return value * unit_values[_get_unit_key(unit)]
 
-        unit_values = {
-            "ms": 0.001,
-            "s": 1,
-            "m": 60,
-            "h": 3600
-        }
+def _get_unit_key(unit):
+    """
+    Finds the key in UNIT_MAP that corresponds to the given unit.
 
-        unit_values["d"] = opts["hoursPerDay"] * unit_values["h"]
-        unit_values["w"] = opts["daysPerWeek"] * unit_values["d"]
-        unit_values["mth"] = (opts["daysPerYear"] / opts["monthsPerYear"]) * unit_values["d"]
-        unit_values["y"] = opts["daysPerYear"] * unit_values["d"]
+    Args:
+        unit (str): The unit to search for.
 
-        return unit_values
+    Returns:
+        str: The key in UNIT_MAP or raises an error if not found.
 
-    @staticmethod
-    def _convert(total_seconds, return_unit, unit_values):
-        """
-        Converts seconds to another unit.
+    Raises:
+        ValueError: If the unit is not supported.
+    """
+    for key, aliases in UNIT_MAP.items():
+        if unit in aliases:
+            return key
+    raise ValueError(f"The unit '{unit}' is not supported by timestring")
 
-        Args:
-            total_seconds (float): The total time in seconds.
-            return_unit (str): The unit to convert to.
-            unit_values (dict): Dictionary with conversion factors.
+while True:
+    arg = input("Input a timestring: ")
 
-        Returns:
-            float: The converted value.
-        """
-
-        if return_unit not in unit_values:
-            raise ValueError(f"Invalid return unit: {return_unit}")
-        return total_seconds / unit_values[return_unit]
-
-    @staticmethod
-    def _get_unit_key(unit):
-        """
-        Finds the key in UNIT_MAP that corresponds to the given unit.
-
-        Args:
-            unit (str): The unit to search for.
-
-        Returns:
-            str: The key in UNIT_MAP or raises an error if not found.
-
-        Raises:
-            ValueError: If the unit is not supported.
-        """
-        for key, aliases in UNIT_MAP.items():
-            if unit in aliases:
-                return key
-        raise ValueError(f"The unit '{unit}' is not supported by timestring")
-
-    @staticmethod
-    def _get_seconds(value, unit, unit_values):
-        """
-        Converts a value to seconds based on the given unit.
-
-        Args:
-            value (float): The value to convert.
-            unit (str): The unit of the value.
-            unit_values (dict): Dictionary with conversion factors.
-
-        Returns:
-            float: The value in seconds.
-        """
-        return value * unit_values[TimestringPy._get_unit_key(unit)]
-
-    @staticmethod
-    def _convert(total_seconds, return_unit, unit_values):
-        """
-        Converts seconds to another unit.
-
-        Args:
-            total_seconds (float): The total time in seconds.
-            return_unit (str): The unit to convert to.
-            unit_values (dict): Dictionary with conversion factors.
-
-        Returns:
-            float: The converted value.
-        """
-
-        # Reuse existing error handling from the previous definition
-        return total_seconds / unit_values[TimestringPy._get_unit_key(return_unit)]
-
-
-Timestring = TimestringPy
+    if arg != "zZz":
+        print(parse_timestring(arg))
+    else:
+        break
