@@ -31,7 +31,7 @@ DEFAULT_OPTS = {
     "daysPerYear": 365.25
 }
 
-UNIT_MAP = {
+DEFAULT_UNIT_MAP = {
     "ms":   ["ms", "milli", "millisecond", "milliseconds"],
     "s":    ["s", "sec", "secs", "second", "seconds"],
     "m":    ["m", "min", "mins", "minute", "minutes"],
@@ -42,45 +42,62 @@ UNIT_MAP = {
     "y":    ["y", "yr", "yrs", "year", "years"]
 }
 
-def parse_timestring(value: str | int, opts: dict[str, float] = DEFAULT_OPTS) -> timedelta:
+def parse_timestring(
+    value: str | int,
+    return_unit: str | None = None,
+    opts: dict[str, int |float] = DEFAULT_OPTS,
+    unit_map: dict[str, list[str]] = DEFAULT_UNIT_MAP
+) -> int | float:
     """
-    Parses a timestring into a timedelta object.
+    Parses a timestring into a floating number.
 
     ### Args:
         value (str | int): The timestring to parse (e.g., "1h2m3s", "5 days", etc.) OR the seconds but then it needs to be of type `int`.
         opts (dict, optional): Optional dictionary with custom options. Defaults to DEFAULT_OPTS.
 
-            `hoursPerDay` (int, optional): The number of hours in a day (defaults to 24).
-            `daysPerWeek` (int, optional): The number of days in a week (defaults to 7).
-            `weeksPerMonth` (int, optional): The number of weeks in a month (defaults to 4).
-            `monthsPerYear` (int, optional): The number of months in a year (defaults to 12).
-            `daysPerYear` (float, optional): The average number of days in a year (defaults to 365.25).
+            `hoursPerDay` (int): The number of hours in a day (defaults to 24).
+            `daysPerWeek` (int): The number of days in a week (defaults to 7).
+            `weeksPerMonth` (int): The number of weeks in a month (defaults to 4).
+            `monthsPerYear` (int): The number of months in a year (defaults to 12).
+            `daysPerYear` (float): The average number of days in a year (defaults to 365.25).
 
-            If you pass this attribute, ALL keys listed above MUST be given!
+        units (dict, optional): Optional dictionary with custom units (e.g. for another language). Defaults to DEFAULT_OPTS.
+
+            `ms` ( list[str] ): All strings that should be considered a unit of "milliseconds".
+            `s` ( list[str] ): All strings that should be considered a unit of "seconds".
+            `m` ( list[str] ): All strings that should be considered a unit of "minutes".
+            `h` ( list[str] ): All strings that should be considered a unit of "hours".
+            `d` ( list[str] ): All strings that should be considered a unit of "days".
+            `w` ( list[str] ): All strings that should be considered a unit of "weeks".
+            `mth` ( list[str] ): All strings that should be considered a unit of "months".
+            `y` ( list[str] ): All strings that should be considered a unit of "years".
 
     ### Returns:
-        timedelta: The parsed time as a timedelta object.
+        float: The parsed time in seconds or the return unit, if given.
 
     ### Raises:
-        ValueError: If the value cannot be parsed or the return unit is invalid.
+        ValueError: If the value cannot be parsed.
     """
 
     if value.isnumeric() or isinstance(value, int):
         value = value + "s"
 
-    UNIT_VALUES = _get_unit_values(opts)
     matches = re.finditer(r'[-+]?[0-9.]+[a-z]+', re.sub(r'[^.\w+-]+', "", value.lower()))
 
     if not matches:
         raise ValueError(f"Failed to parse value: `{value}`")
 
+    UNIT_VALUES = _get_unit_values(opts)
+    UNIT_MAP = _get_unit_map(unit_map)
     total_seconds = 0
     for match in matches:
-        print(match)
         val, unit = re.search(r'[0-9.]+', match.group(0)), re.search(r'[a-z]+', match.group(0))
-        total_seconds += _get_seconds(int(val.group(0)), unit.group(0), UNIT_VALUES)
+        total_seconds += _get_seconds(int(val.group(0)), unit.group(0), UNIT_VALUES, UNIT_MAP)
 
-    return timedelta(seconds=total_seconds)
+    if return_unit:
+        return _convert(total_seconds, return_unit, UNIT_VALUES, UNIT_MAP)
+
+    return total_seconds
 
 def _get_unit_values(opts) -> dict[str, float]:
     """
@@ -99,15 +116,17 @@ def _get_unit_values(opts) -> dict[str, float]:
         "m": 60,
         "h": 3600
     }
+    _opts = DEFAULT_OPTS
+    _opts.update(opts)
 
-    unit_values["d"] = opts["hoursPerDay"] * unit_values["h"]
-    unit_values["w"] = opts["daysPerWeek"] * unit_values["d"]
-    unit_values["mth"] = (opts["daysPerYear"] / opts["monthsPerYear"]) * unit_values["d"]
-    unit_values["y"] = opts["daysPerYear"] * unit_values["d"]
+    unit_values["d"] = _opts["hoursPerDay"] * unit_values["h"]
+    unit_values["w"] = _opts["daysPerWeek"] * unit_values["d"]
+    unit_values["mth"] = (_opts["daysPerYear"] / _opts["monthsPerYear"]) * unit_values["d"]
+    unit_values["y"] = _opts["daysPerYear"] * unit_values["d"]
 
     return unit_values
 
-def _get_seconds(value, unit, unit_values) -> float:
+def _get_seconds(value, unit, unit_values, unit_map) -> float:
     """
     Converts a value to seconds based on the given unit.
 
@@ -119,22 +138,30 @@ def _get_seconds(value, unit, unit_values) -> float:
     Returns:
         float: The value in seconds.
     """
-    return value * unit_values[_get_unit_key(unit)]
+    return value * unit_values[_get_unit_key(unit, unit_map)]
 
-def _get_unit_key(unit):
+def _get_unit_key(unit, unit_map):
     """
-    Finds the key in UNIT_MAP that corresponds to the given unit.
+    Finds the key in the unit_map that corresponds to the given unit.
 
     Args:
         unit (str): The unit to search for.
 
     Returns:
-        str: The key in UNIT_MAP or raises an error if not found.
+        str: The key in UNIT_MAP, if found.
 
     Raises:
         ValueError: If the unit is not supported.
     """
-    for key, aliases in UNIT_MAP.items():
-        if unit in aliases:
+    for key in unit_map.keys():
+        if unit in unit_map[key]:  # Nutze "in" für Mengenüberprüfung
             return key
     raise ValueError(f"The unit '{unit}' is not supported by timestring")
+
+def _get_unit_map(unit_map) -> dict[str, list[str]]:
+    _um = DEFAULT_UNIT_MAP
+    _um.update(unit_map)
+    return _um
+
+def _convert(value, unit, unit_values, unit_map) -> float:
+    return (value / unit_values[_get_unit_key(unit, unit_map)])

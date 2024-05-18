@@ -1,5 +1,5 @@
 # TimestringPy
-> Parse a human readable time string into a timedelta object.
+> Parse a human readable time string into seconds or a specified return unit.
 
 ## Installation
 
@@ -14,10 +14,10 @@ pip install git+https://github.com/The-LukeZ/TimestringPy
 ```py
 import timestring
 
-string = '1h 15m'
-time = timestring.parse_timestring(string)
+value = '1h 15m'
+time = timestring.parse_timestring(value)
 
-print(time) # will print 1:15:00
+print(time) # will print 4500
 ```
 
 > **By default the returned time value from `timestring` will be a `timedelta`.**
@@ -27,10 +27,10 @@ The time string can contain as many time groups as needed:
 ```py
 import timestring
 
-string = '1d 3h 25m 18s'
-time = timestring.parse_timestring(string)
+value = '1d 3h 25m 18s'
+time = timestring.parse_timestring(value)
 
-print(time) # will print 1 day, 3:25:18
+print(time) # will print 98718
 ```
 
 and can be as messy as you like:
@@ -38,10 +38,10 @@ and can be as messy as you like:
 ```py
 import timestring
 
-string = '1 d    3HOurS 25              min         1   8s'
-time = timestring.parse_timestring(string)
+value = '1 d    3HOurS 25              min         1   8s'
+time = timestring.parse_timestring(value)
 
-print(time) # will print 1 day, 3:25:18
+print(time) # will print 98718
 ```
 
 ### Keywords
@@ -62,10 +62,35 @@ Keywords can be used interchangeably:
 ```py
 import timestring
 
-let str = '1day 15h 20minutes 15s'
-let time = timestring.parse_timestring(str)
+value = '1day 15h 20minutes 15s'
+time = timestring.parse_timestring(value)
 
-print(time) # will print 1 day, 15:20:15
+print(time) # will print 141615
+```
+
+### Return Time Value
+
+By default the return time value will be in seconds. This can be changed by passing one of the following strings as an argument to `timestring`:
+
+1. `ms` - Milliseconds
+2. `s` - Seconds
+3. `m` - Minutes
+4. `h` - Hours
+5. `d` - Days
+6. `w` - Weeks
+7. `mth` - Months
+8. `y` - Years
+
+```py
+value = '22h 16m'
+
+hours = timestring.parse_timestring(value, 'h')
+days = timestring.parse_timestring(value, 'd')
+weeks = timestring.parse_timestring(value, 'w')
+
+print(hours) # will print 22.266666666666666
+print(days) # will print 0.9277777777777778
+print(weeks) # will print 0.13253968253968254
 ```
 
 ### Optional Configuration
@@ -91,14 +116,14 @@ The following options are configurable:
 ```py
 import timestring
 
-let str = '1d'
-let opts = {
-  hoursPerDay: 1
+value = '1d'
+opts = {
+  'hoursPerDay': 1
 }
 
-let time = timestring(str, 'h', opts)
+time = timestring.parse_timestring(value, 'h', opts) # 'h' because we want the hours
 
-console.log(time) // will log 1
+print(time) # will print 1.0
 ```
 
 In the example above `hoursPerDay` is being set to `1`. When the time string is being parsed, the return value is being specified as hours. Normally `1d` would parse to `24` hours (as by default there are 24 hours in a day) but because `hoursPerDay` has been set to `1`, `1d` will now only parse to `1` hour.
@@ -108,38 +133,40 @@ This would be useful for specific application needs.
 *Example - Employees of my company work 7.5 hours a day, and only work 5 days a week. In my time tracking app, when they type `1d` i want 7.5 hours to be tracked. When they type `1w` i want 5 days to be tracked etc.*
 
 ```py
-const timestring = require('timestring')
+import timestring
 
-let opts = {
-  hoursPerDay: 7.5,
-  daysPerWeek: 5
+opts = {
+  'hoursPerDay': 7.5,
+  'daysPerWeek': 5
 }
 
-let hoursToday = timestring('1d', 'h', opts)
-let daysThisWeek = timestring('1w', 'd', opts)
+hoursToday = timestring.parse_timestring('1d', 'h', opts)
+daysThisWeek = timestring.parse_timestring('1w', 'd', opts)
 
-console.log(hoursToday) // will log 7.5
-console.log(daysThisWeek) // will log 5
+print(hoursToday) # will print 7.5
+print(daysThisWeek) # will print 5.0
 ```
 
-It is important to note that the `daysPerYear` configuration option will be used to convert a month or year to seconds, so if you are using custom configuration options make sure that you adjust this value to suit if you expect to be parsing timestrings containing months or years.
+You can also pass on our own time-units in order to make more languages available.
 
-## Notes
-
-If the string that is passed into `timestring` can not be parsed then an error will be thrown:
-
-```py
-import timestring
-
-string = 'aaabbbccc'
-time = timestring.parse_timestring(string) // will throw an error
-```
-
-If an int/float is passed into `timestring` it will be treated as a string containing seconds:
+**Example**
+> I have the same use example from above but now I want my German users to type in '1tag' instead of '1 day' (They might don't know the wording) but I want the hours of the day.
 
 ```py
-import timestring
+value = '1tag'
 
-time = timestring.parse_timestring(30.0)
-print(time) # will print 0:00:30 (30 seconds)
+units = {
+    "d": ["tag", "d", "day", "days"]
+}
+
+opts = {
+  'hoursPerDay': 7.5,
+  'daysPerWeek': 5
+}
+
+hoursToday = timestring.parse_timestring(value, 'h', opts, units)
+daysThisWeek = timestring.parse_timestring(value, 'd', opts, units)
+
+print(hoursToday) # will print 7.5 (7.5 hours)
+print(daysThisWeek) # will print 1.0 (1 day)
 ```
