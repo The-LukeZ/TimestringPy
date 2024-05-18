@@ -20,5 +20,5 @@ setup(
     py_modules=['timestring'],
     scripts=['timestring.py'],
     license='MIT',
-    long_description_content_type="text/x-md"
+    long_description_content_type="text/markdown"
 )
