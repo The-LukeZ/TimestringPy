@@ -4,7 +4,7 @@
 ## Installation
 
 ```bash
-pip install TimestringPy
+pip install git+https://github.com/The-LukeZ/TimestringPy
 ```
 
 ## Usage
