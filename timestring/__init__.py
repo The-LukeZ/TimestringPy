@@ -150,7 +150,6 @@ def _get_unit_key(unit, unit_map):
         ValueError: If the unit is not supported.
     """
     for key in unit_map.keys():
-        print(key)
         if unit in unit_map[key]:
             return key
     raise ValueError(f"The unit '{unit}' is not supported by timestring")
