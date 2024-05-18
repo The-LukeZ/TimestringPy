@@ -20,7 +20,7 @@ time = timestring.parse_timestring(value)
 print(time) # will print 4500
 ```
 
-> **By default the returned time value from `timestring` will be a `timedelta`.**
+**By default the returned time value from `timestring` will be a `float`.**
 
 The time string can contain as many time groups as needed:
 
