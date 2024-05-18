@@ -19,5 +19,6 @@ setup(
     url=BASE_URL + "TimestringPy/",
     py_modules=['timestring'],
     scripts=['timestring.py'],
-    license='MIT'
+    license='MIT',
+    long_description_content_type="text/x-md"
 )
