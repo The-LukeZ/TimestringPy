@@ -7,13 +7,12 @@ except ImportError:
 BASE_URL = "https://github.com/The-LukeZ/"
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.md')).read()
 
 setup(
     name='TimestringPy',
     version='1.0',
     description='Parse a timestring into a timedelta object.',
-    long_description=README,
+    long_description='file:README.md',
     author='The-LukeZ',
     author_email='luke.hent3005@gmail.com',
     url=BASE_URL + "TimestringPy/",
