@@ -5,20 +5,20 @@ Timestring Parser (Py)
 ~~~~~~~~~~~~~~~~
 
 This script provides functionality to parse human-readable timestrings
-into timedelta objects. It supports various time units and allows
+into floating numbers. It supports various time units and allows
 customization through options.
 
 It is originally taken from the npm-module ["timestring"](https://www.npmjs.com/package/timestring) (javascript)
-but it's now converted into Python.
+but converted into Python.
 """
 
 __title__ = 'TimestringPy'
 __author__ = 'The-LukeZ'
 __license__ = 'MIT'
 __copyright__ = 'Copyright (C) 2024 The-LukeZ'
-__version__ = '1.0'
+__version__ = '1.1'
 __credits__ = ["mike182uk"]
-__all__ = ["parse_timestring", "DEFAULT_OPTS", "UNIT_MAP"]
+__all__ = ["parse_timestring", "DEFAULT_OPTS", "DEFAULT_UNIT_MAP"]
 
 import re
 from datetime import timedelta

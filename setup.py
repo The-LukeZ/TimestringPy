@@ -10,8 +10,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 setup(
     name='TimestringPy',
-    version='1.0',
-    description='Parse a timestring into a timedelta object.',
+    version='1.1',
+    description='Parse a timestring into a floating number.',
     long_description='file:README.md',
     author='The-LukeZ',
     author_email='luke.hent3005@gmail.com',
