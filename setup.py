@@ -10,7 +10,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 setup(
     name='TimestringPy',
-    version='1.1',
+    version='1.1.1',
     description='Parse a timestring into a floating number.',
     long_description='file:README.md',
     author='The-LukeZ',
@@ -18,5 +18,6 @@ setup(
     url=BASE_URL + "TimestringPy/",
     packages=find_packages(),
     license='MIT',
-    long_description_content_type="text/markdown"
+    long_description_content_type="text/markdown",
+    credits=["mike182uk"]
 )

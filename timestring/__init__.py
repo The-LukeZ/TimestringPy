@@ -12,12 +12,6 @@ It is originally taken from the npm-module ["timestring"](https://www.npmjs.com/
 but converted into Python.
 """
 
-__title__ = 'TimestringPy'
-__author__ = 'The-LukeZ'
-__license__ = 'MIT'
-__copyright__ = 'Copyright (C) 2024 The-LukeZ'
-__version__ = '1.1'
-__credits__ = ["mike182uk"]
 __all__ = ["parse_timestring", "DEFAULT_OPTS", "DEFAULT_UNIT_MAP"]
 
 import re
