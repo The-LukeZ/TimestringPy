@@ -44,7 +44,7 @@ DEFAULT_UNIT_MAP = {
 
 def parse_timestring(
     value: str | int,
-    return_unit: str | None = None,
+    return_unit: str | None = None, # I don't know how it can either be a key or one of the values of the DEFAULT_UNIT_MAP - it just works
     opts: dict[str, int |float] = DEFAULT_OPTS,
     unit_map: dict[str, list[str]] = DEFAULT_UNIT_MAP
 ) -> int | float:
@@ -53,7 +53,8 @@ def parse_timestring(
 
     ### Args:
         value (str | int): The timestring to parse (e.g., "1h2m3s", "5 days", etc.) OR the seconds but then it needs to be of type `int`.
-        return_unit (str, optional): The key of the DEFAULT_UNIT_MAP that should be the unit that is returned. Defaults to None, which results in seconds being returned.
+        return_unit (str, optional): The time unit that is returned. A key or a value of the unit_map (param) or DEFAULT_UNIT_MAP.
+            Defaults to None, which results in seconds being returned.
         opts (dict, optional): Optional dictionary with custom options. Defaults to DEFAULT_OPTS.
 
             `hoursPerDay` (int): The number of hours in a day (defaults to 24).
@@ -155,6 +156,7 @@ def _get_unit_key(unit, unit_map):
         ValueError: If the unit is not supported.
     """
     for key in unit_map.keys():
+        print(key)
         if unit in unit_map[key]:
             return key
     raise ValueError(f"The unit '{unit}' is not supported by timestring")
