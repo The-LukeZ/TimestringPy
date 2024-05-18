@@ -53,6 +53,7 @@ def parse_timestring(
 
     ### Args:
         value (str | int): The timestring to parse (e.g., "1h2m3s", "5 days", etc.) OR the seconds but then it needs to be of type `int`.
+        return_unit (str, optional): The key of the DEFAULT_UNIT_MAP that should be the unit that is returned. Defaults to None, which results in seconds being returned.
         opts (dict, optional): Optional dictionary with custom options. Defaults to DEFAULT_OPTS.
 
             `hoursPerDay` (int): The number of hours in a day (defaults to 24).
@@ -154,7 +155,7 @@ def _get_unit_key(unit, unit_map):
         ValueError: If the unit is not supported.
     """
     for key in unit_map.keys():
-        if unit in unit_map[key]:  # Nutze "in" für Mengenüberprüfung
+        if unit in unit_map[key]:
             return key
     raise ValueError(f"The unit '{unit}' is not supported by timestring")
 
