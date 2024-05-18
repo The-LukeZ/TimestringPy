@@ -1,8 +1,8 @@
 import os
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup, find_packages
 
 BASE_URL = "https://github.com/The-LukeZ/"
 
@@ -16,8 +16,7 @@ setup(
     author='The-LukeZ',
     author_email='luke.hent3005@gmail.com',
     url=BASE_URL + "TimestringPy/",
-    py_modules=['timestring'],
-    scripts=['timestring.py'],
+    packages=find_packages(),
     license='MIT',
     long_description_content_type="text/markdown"
 )
