@@ -12,12 +12,12 @@ pip install TimestringPy
 ### Overview
 
 ```py
-from timestringpy import parse_timestring
+import timestring
 
-str = '1h 15m'
-time = parse_timestring(str)
+string = '1h 15m'
+time = timestring.parse_timestring(string)
 
-print(time) # will log 4500
+print(time) # will print 1:15:00
 ```
 
 > **By default the returned time value from `timestring` will be a `timedelta`.**
@@ -25,23 +25,23 @@ print(time) # will log 4500
 The time string can contain as many time groups as needed:
 
 ```py
-from timestringpy import parse_timestring
+import timestring
 
-str = '1d 3h 25m 18s'
-time = parse_timestring(str)
+string = '1d 3h 25m 18s'
+time = timestring.parse_timestring(string)
 
-console.log(time) // will log 98718
+print(time) # will print 1 day, 3:25:18
 ```
 
 and can be as messy as you like:
 
 ```py
-const timestring = require('timestring')
+import timestring
 
-let str = '1 d    3HOurS 25              min         1   8s'
-let time = timestring(str)
+string = '1 d    3HOurS 25              min         1   8s'
+time = timestring.parse_timestring(string)
 
-console.log(time) // will log 98718
+print(time) # will print 1 day, 3:25:18
 ```
 
 ### Keywords
@@ -60,39 +60,12 @@ console.log(time) // will log 98718
 Keywords can be used interchangeably:
 
 ```py
-const timestring = require('timestring')
+import timestring
 
 let str = '1day 15h 20minutes 15s'
-let time = timestring(str)
+let time = timestring.parse_timestring(str)
 
-console.log(time) // will log 141615
-```
-
-### Return Time Value
-
-By default the return time value will be in seconds. This can be changed by passing one of the following strings as an argument to `timestring`:
-
-1. `ms` - Milliseconds
-2. `s` - Seconds
-3. `m` - Minutes
-4. `h` - Hours
-5. `d` - Days
-6. `w` - Weeks
-7. `mth` - Months
-8. `y` - Years
-
-```py
-const timestring = require('timestring')
-
-let str = '22h 16m'
-
-let hours = timestring(str, 'h')
-let days = timestring(str, 'd')
-let weeks = timestring(str, 'w')
-
-console.log(hours) // will log 22.266666666666666
-console.log(days) // will log 0.9277777777777778
-console.log(weeks) // will log 0.13253968253968254
+print(time) # will print 1 day, 15:20:15
 ```
 
 ### Optional Configuration
@@ -116,7 +89,7 @@ The following options are configurable:
 5. `daysPerYear`
 
 ```py
-const timestring = require('timestring')
+import timestring
 
 let str = '1d'
 let opts = {
@@ -156,16 +129,17 @@ It is important to note that the `daysPerYear` configuration option will be used
 If the string that is passed into `timestring` can not be parsed then an error will be thrown:
 
 ```py
-const timestring = require('timestring')
+import timestring
 
-let str = 'aaabbbccc'
-let time = timestring(str) // will throw an error
+string = 'aaabbbccc'
+time = timestring.parse_timestring(string) // will throw an error
 ```
 
-If a number is passed into `timestring` it will be treated as a string containing milliseconds:
+If an int/float is passed into `timestring` it will be treated as a string containing seconds:
 
 ```py
-const timestring = require('timestring')
+import timestring
 
-let time = timestring(3000) // 3s
+time = timestring.parse_timestring(30.0)
+print(time) # will print 0:00:30 (30 seconds)
 ```

@@ -69,13 +69,14 @@ def parse_timestring(value: str | int, opts: dict[str, float] = DEFAULT_OPTS) ->
         value = value + "s"
 
     UNIT_VALUES = _get_unit_values(opts)
-    MATCHES = re.finditer(r'[-+]?[0-9.]+[a-z]+', re.sub(r'[^.\w+-]+', "", value.lower()))
+    matches = re.finditer(r'[-+]?[0-9.]+[a-z]+', re.sub(r'[^.\w+-]+', "", value.lower()))
 
-    if not MATCHES:
+    if not matches:
         raise ValueError(f"Failed to parse value: `{value}`")
 
     total_seconds = 0
-    for match in MATCHES:
+    for match in matches:
+        print(match)
         val, unit = re.search(r'[0-9.]+', match.group(0)), re.search(r'[a-z]+', match.group(0))
         total_seconds += _get_seconds(int(val.group(0)), unit.group(0), UNIT_VALUES)
 
@@ -137,11 +138,3 @@ def _get_unit_key(unit):
         if unit in aliases:
             return key
     raise ValueError(f"The unit '{unit}' is not supported by timestring")
-
-while True:
-    arg = input("Input a timestring: ")
-
-    if arg != "zZz":
-        print(parse_timestring(arg))
-    else:
-        break

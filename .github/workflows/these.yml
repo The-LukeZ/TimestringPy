@@ -1,0 +1,38 @@
+name: Publish release to PyPI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+  
+  publish-to-pypi:
+    name: Publish
+    runs-on: ubuntu-22.04
+    needs: build
+    permissions: 
+      contents: read
+      actions: read
+      id-token: write
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/TimestringPy
+
+    steps:
+      - name: Publish this
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
