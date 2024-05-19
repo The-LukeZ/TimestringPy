@@ -149,7 +149,7 @@ print(daysThisWeek) # will print 5.0
 
 You can also pass your own time units to make more languages available.
 
-**Example
+**Example**
 > You have the same usage example as above, but now you want your German users to type '1 Tag' instead of '1 day' (they may not know the wording), but you want the hours of the day and the amount of days they typed in.
 
 ```py
