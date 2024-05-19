@@ -70,7 +70,7 @@ print(time) # will print 141615
 
 ### Return Time Value
 
-By default the return time value will be in seconds. This can be changed by passing one of the following strings as an argument to `timestring`:
+By default the return time value will be in seconds. This can be changed by passing one of the strings form the default time-units or an element from the `unit_map`-parameter:
 
 1. `ms` - Milliseconds
 2. `s` - Seconds
@@ -103,7 +103,7 @@ A few assumptions are made by default:
 4. There are 12 months per year
 5. There are 365.25 days per year
 
-These options can be changed by passing an options object as an argument to `timestring`.
+These options can be changed by passing an `dict` to the `opts`-parameter.
 
 The following options are configurable:
 
@@ -121,12 +121,12 @@ opts = {
   'hoursPerDay': 1
 }
 
-time = timestring.parse_timestring(value, 'h', opts) # 'h' because we want the hours
+time = timestring.parse_timestring(value, 'h', opts=opts) # 'h' because we want the number of hours
 
 print(time) # will print 1.0
 ```
 
-In the example above `hoursPerDay` is being set to `1`. When the time string is being parsed, the return value is being specified as hours. Normally `1d` would parse to `24` hours (as by default there are 24 hours in a day) but because `hoursPerDay` has been set to `1`, `1d` will now only parse to `1` hour.
+In the example above `hoursPerDay` is being set to `1`. When the time string is being parsed, the return value is being specified as hours. Normally `1d` would parse to the number of seconds in one day à `24h` (as by default there are 24 hours in a day) but because `hoursPerDay` has been set to `1`, `1d` will now only parse to the number of seconds in `1` hour (aka `1d` here).
 
 This would be useful for specific application needs.
 
@@ -150,7 +150,7 @@ print(daysThisWeek) # will print 5.0
 You can also pass your own time units to make more languages available.
 
 **Example**
-> You have the same usage example as above, but now you want your German users to type '1 Tag' instead of '1 day' (they may not know the wording), but you want the hours of the day and the amount of days they typed in.
+> You have the same example as above, but now you want your German users to type '1 Tag' instead of '1 day' (they may not know the wording), but you want the hours of the day and the amount of days they typed in.
 
 ```py
 value = '1 tag'
