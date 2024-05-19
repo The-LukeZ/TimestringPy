@@ -147,13 +147,13 @@ print(hoursToday) # will print 7.5
 print(daysThisWeek) # will print 5.0
 ```
 
-You can also pass on our own time-units in order to make more languages available.
+You can also pass your own time units to make more languages available.
 
-**Example**
-> I have the same use example from above but now I want my German users to type in '1tag' instead of '1 day' (They might don't know the wording) but I want the hours of the day.
+**Example
+> You have the same usage example as above, but now you want your German users to type '1 Tag' instead of '1 day' (they may not know the wording), but you want the hours of the day and the amount of days they typed in.
 
 ```py
-value = '1tag'
+value = '1 tag'
 
 units = {
     "d": ["tag", "d", "day", "days"]
