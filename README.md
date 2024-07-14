@@ -1,6 +1,8 @@
 # TimestringPy
 > Parse a human readable time string into seconds or a specified return unit.
 
+Orinigal source code: [npm i timestring](https://www.npmjs.com/package/timestring) (Javascript)
+
 ## Installation
 
 ```bash
