@@ -1,22 +1,22 @@
 import setuptools
 
-BASE_URL = "https://github.com/The-LukeZ/"
-
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+try:
+    with open("README.md", "r", encoding="utf-8") as fh:
+        long_description = fh.read()
+except:
+    long_description = "Parse a timestring into a floating number."
 
 setuptools.setup(
     name='TimestringPy',
-    version='1.1.3',
+    version='1.2.0',
     description='Parse a timestring into a floating number.',
     long_description=long_description,
     author='The-LukeZ',
-    author_email='luke.hent3005@gmail.com',
-    url=BASE_URL + "TimestringPy/",
+    maintainer='The-LukeZ',
+    url="https://github.com/The-LukeZ/TimestringPy",
     packages=setuptools.find_packages(),
     license='MIT',
     long_description_content_type="text/markdown",
-    credits=["mike182uk"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
