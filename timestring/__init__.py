@@ -15,9 +15,9 @@ but converted into Python.
 __all__ = ["parse_timestring", "DEFAULT_OPTS", "DEFAULT_UNIT_MAP"]
 
 import re
-from datetime import timedelta
+from typing import Dict, Iterator, List, Match, Optional, Union
 
-DEFAULT_OPTS = {
+DEFAULT_OPTS: Dict[str, Union[int, float]] = {
     "hoursPerDay": 24,
     "daysPerWeek": 7,
     "weeksPerMonth": 4,
@@ -25,7 +25,7 @@ DEFAULT_OPTS = {
     "daysPerYear": 365.25
 }
 
-DEFAULT_UNIT_MAP = {
+DEFAULT_UNIT_MAP: Dict[str, List[str]] = {
     "ms":   ["ms", "milli", "millisecond", "milliseconds"],
     "s":    ["s", "sec", "secs", "second", "seconds"],
     "m":    ["m", "min", "mins", "minute", "minutes"],
@@ -38,12 +38,11 @@ DEFAULT_UNIT_MAP = {
 
 
 def parse_timestring(
-    value: str | int,
-    # I don't know how it can either be a key or one of the values of the DEFAULT_UNIT_MAP - it just works
-    return_unit: str | None = None,
-    opts: dict[str, int | float] = DEFAULT_OPTS,
-    unit_map: dict[str, list[str]] = DEFAULT_UNIT_MAP
-) -> int | float:
+    value: Union[str, int],
+    return_unit: Optional[str] = None,
+    opts: Dict[str, Union[int, float]] = DEFAULT_OPTS,
+    unit_map: Dict[str, List[str]] = DEFAULT_UNIT_MAP
+) -> Union[int, float]:
     """
     Parses a timestring into a floating number.
 
@@ -80,18 +79,18 @@ def parse_timestring(
     if isinstance(value, int) or (isinstance(value, str) and value.isnumeric()):
         value = str(value) + "s"
 
-    matches = re.finditer(r'[-+]?[0-9.]+[a-z]+',
-                          re.sub(r'[^.\w+-]+', "", value.lower()))
+    matches: Iterator[Match[str]] = re.finditer(r'[-+]?[0-9.]+[a-z]+',
+                                                re.sub(r'[^.\w+-]+', "", value.lower()))
 
     if not matches:
         raise ValueError(f"Failed to parse value: `{value}`")
 
-    UNIT_VALUES = _get_unit_values(opts)
-    UNIT_MAP = _get_unit_map(unit_map)
-    total_seconds = 0
+    UNIT_VALUES: Dict[str, float] = _get_unit_values(opts)
+    UNIT_MAP: Dict[str, List[str]] = _get_unit_map(unit_map)
+    total_seconds: float = 0
     for match in matches:
-        val, unit = re.search(r'[0-9.]+', match.group(0)
-                              ), re.search(r'[a-z]+', match.group(0))
+        val: Optional[Match[str]] = re.search(r'[0-9.]+', match.group(0))
+        unit: Optional[Match[str]] = re.search(r'[a-z]+', match.group(0))
         if val is None or unit is None:
             raise ValueError(f"Failed to parse match: `{match.group(0)}`")
         total_seconds += _get_seconds(float(val.group(0)),
@@ -103,7 +102,7 @@ def parse_timestring(
     return total_seconds
 
 
-def _get_unit_values(opts) -> dict[str, float]:
+def _get_unit_values(opts: Dict[str, Union[int, float]]) -> Dict[str, float]:
     """
     Calculates conversion factors based on options.
 
@@ -114,13 +113,13 @@ def _get_unit_values(opts) -> dict[str, float]:
         dict: Dictionary with conversion factors for each unit.
     """
 
-    unit_values = {
+    unit_values: Dict[str, float] = {
         "ms": 0.001,
         "s": 1,
         "m": 60,
         "h": 3600
     }
-    _opts = DEFAULT_OPTS
+    _opts: Dict[str, Union[int, float]] = DEFAULT_OPTS
     _opts.update(opts)
 
     unit_values["d"] = _opts["hoursPerDay"] * unit_values["h"]
@@ -132,7 +131,7 @@ def _get_unit_values(opts) -> dict[str, float]:
     return unit_values
 
 
-def _get_seconds(value, unit, unit_values, unit_map) -> float:
+def _get_seconds(value: float, unit: str, unit_values: Dict[str, float], unit_map: Dict[str, List[str]]) -> float:
     """
     Converts a value to seconds based on the given unit.
 
@@ -147,7 +146,7 @@ def _get_seconds(value, unit, unit_values, unit_map) -> float:
     return value * unit_values[_get_unit_key(unit, unit_map)]
 
 
-def _get_unit_key(unit, unit_map):
+def _get_unit_key(unit: str, unit_map: Dict[str, List[str]]) -> str:
     """
     Finds the key in the unit_map that corresponds to the given unit.
 
@@ -166,11 +165,11 @@ def _get_unit_key(unit, unit_map):
     raise ValueError(f"The unit '{unit}' is not supported by timestring")
 
 
-def _get_unit_map(unit_map) -> dict[str, list[str]]:
-    _um = DEFAULT_UNIT_MAP
+def _get_unit_map(unit_map: Dict[str, List[str]]) -> Dict[str, List[str]]:
+    _um: Dict[str, List[str]] = DEFAULT_UNIT_MAP
     _um.update(unit_map)
     return _um
 
 
-def _convert(value, unit, unit_values, unit_map) -> float:
+def _convert(value: float, unit: str, unit_values: Dict[str, float], unit_map: Dict[str, List[str]]) -> float:
     return (value / unit_values[_get_unit_key(unit, unit_map)])
