@@ -1,11 +1,9 @@
-import os
 import setuptools
 
 BASE_URL = "https://github.com/The-LukeZ/"
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
-
 
 setuptools.setup(
     name='TimestringPy',
