@@ -1,4 +1,5 @@
 # TimestringPy
+
 > Parse a human readable time string into seconds or a specified return unit.
 
 Orinigal source code: [npm i timestring](https://www.npmjs.com/package/timestring) (Javascript)
@@ -6,6 +7,8 @@ Orinigal source code: [npm i timestring](https://www.npmjs.com/package/timestrin
 ## Installation
 
 ```bash
+pip install TimestringPy
+# or
 pip install git+https://github.com/The-LukeZ/TimestringPy
 ```
 
@@ -132,7 +135,7 @@ In the example above `hoursPerDay` is being set to `1`. When the time string is 
 
 This would be useful for specific application needs.
 
-*Example - Employees of my company work 7.5 hours a day, and only work 5 days a week. In my time tracking app, when they type `1d` i want 7.5 hours to be tracked. When they type `1w` i want 5 days to be tracked etc.*
+_Example - Employees of my company work 7.5 hours a day, and only work 5 days a week. In my time tracking app, when they type `1d` i want 7.5 hours to be tracked. When they type `1w` i want 5 days to be tracked etc._
 
 ```py
 import timestring
@@ -151,7 +154,8 @@ print(daysThisWeek) # will print 5.0
 
 You can also pass your own time units to make more languages available.
 
-**Example**
+### Example
+
 > You have the same example as above, but now you want your German users to type '1 Tag' instead of '1 day' (they may not know the wording), but you want the hours of the day and the amount of days they typed in.
 
 ```py
