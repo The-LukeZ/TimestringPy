@@ -8,7 +8,7 @@ except:
 
 setuptools.setup(
     name='TimestringPy',
-    version='1.2.0',
+    version='1.2.1',
     description='Parse a timestring into a floating number.',
     long_description=long_description,
     author='The-LukeZ',
