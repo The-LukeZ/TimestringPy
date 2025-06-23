@@ -79,8 +79,8 @@ def parse_timestring(
     if isinstance(value, int) or (isinstance(value, str) and value.isnumeric()):
         value = str(value) + "s"
 
-    matches: Iterator[Match[str]] = re.finditer(r'[-+]?[0-9.]+[a-z]+',
-                                                re.sub(r'[^.\w+-]+', "", value.lower()))
+    matches: List[Match[str]] = list(re.finditer(r'[-+]?[0-9.]+[a-z]+',
+                                                 re.sub(r'[^.\w+-]+', "", value.lower())))
 
     if not matches:
         raise ValueError(f"Failed to parse value: `{value}`")
@@ -89,7 +89,7 @@ def parse_timestring(
     UNIT_MAP: Dict[str, List[str]] = _get_unit_map(unit_map)
     total_seconds: float = 0
     for match in matches:
-        val: Optional[Match[str]] = re.search(r'[0-9.]+', match.group(0))
+        val: Optional[Match[str]] = re.search(r'[-+]?[0-9.]+', match.group(0))
         unit: Optional[Match[str]] = re.search(r'[a-z]+', match.group(0))
         if val is None or unit is None:
             raise ValueError(f"Failed to parse match: `{match.group(0)}`")
@@ -119,7 +119,7 @@ def _get_unit_values(opts: Dict[str, Union[int, float]]) -> Dict[str, float]:
         "m": 60,
         "h": 3600
     }
-    _opts: Dict[str, Union[int, float]] = DEFAULT_OPTS
+    _opts: Dict[str, Union[int, float]] = DEFAULT_OPTS.copy()
     _opts.update(opts)
 
     unit_values["d"] = _opts["hoursPerDay"] * unit_values["h"]
@@ -166,8 +166,14 @@ def _get_unit_key(unit: str, unit_map: Dict[str, List[str]]) -> str:
 
 
 def _get_unit_map(unit_map: Dict[str, List[str]]) -> Dict[str, List[str]]:
-    _um: Dict[str, List[str]] = DEFAULT_UNIT_MAP
-    _um.update(unit_map)
+    _um: Dict[str, List[str]] = {}
+    # Create a deep copy of DEFAULT_UNIT_MAP to avoid modifying the original
+    for key, value in DEFAULT_UNIT_MAP.items():
+        _um[key] = value.copy()
+
+    # Only update if unit_map is different from DEFAULT_UNIT_MAP
+    if unit_map is not DEFAULT_UNIT_MAP:
+        _um.update(unit_map)
     return _um
 
 
